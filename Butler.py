@@ -13,13 +13,14 @@ class Butler():
     mic = None
     rec = None
 
-    def init(self):
+    def init(self, adjust_noise = True):
         os.system("sphinx_jsgf2fsg -jsgf butler.jsgf > butler.fsg")
         self.rec = sr.Recognizer()
         self.mic = sr.Microphone(device_index=4)
         
-        with self.mic as source:
-            self.rec.adjust_for_ambient_noise(source)
+        if adjust_noise:
+            with self.mic as source:
+                self.rec.adjust_for_ambient_noise(source)
 
     def ask(self):
         self.talk("Yes Zen?")
