@@ -45,7 +45,7 @@ class Butler():
 
 
             recognizedKeyword = self.rec.recognize_sphinx(audio)
-            print("You: "+recognizedKeyword, True)
+            print("You: "+recognizedKeyword, flush=True)
             idx = self.searchKeywords(recognizedKeyword.strip())
 
             if 0 > idx:
