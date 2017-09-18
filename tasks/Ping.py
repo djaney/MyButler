@@ -3,6 +3,6 @@ class Ping(BaseTask):
     def getKeyword(self):
         return "hello"
 
-    def execute(self):
+    def execute(self, match):
         return "hi!"
 

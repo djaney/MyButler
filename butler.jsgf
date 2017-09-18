@@ -7,4 +7,4 @@
 grammar butler;
 public <command> = [<greeting>] <openCommand>;
 <greeting> = hello;
-<openCommand> = open chrome;
+<openCommand> = open (google|chrome);

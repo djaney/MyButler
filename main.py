@@ -10,7 +10,7 @@ import atexit
 
 from Butler import Butler
 from tasks.Ping import Ping 
-from tasks.OpenGoogle import OpenGoogle
+from tasks.OpenApps import OpenApps
 
 def main():
 
@@ -20,7 +20,7 @@ def main():
 
     butler = Butler()
     butler.addTask(Ping())
-    butler.addTask(OpenGoogle())
+    butler.addTask(OpenApps())
 
     # if stdin has data and no audio yet
     if not audio and select.select([sys.stdin,],[],[],0.0)[0]:

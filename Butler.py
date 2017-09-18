@@ -5,6 +5,7 @@ import pyaudio
 import os
 import sys
 import select
+import re
 
 class Butler():
 
@@ -49,12 +50,10 @@ class Butler():
             hyp = engine.hyp()
             recognizedKeywords = hyp.hypstr
             print("You: "+recognizedKeyword, flush=True)
-            idx = self.searchKeywords(recognizedKeyword.strip())
-
-            if 0 > idx:
+            res = self.searchKeywords(recognizedKeyword.strip())
+            if res is None:
                 return "I don't understand " + recognizedKeyword.strip() 
-
-            return self.tasks[idx].execute()
+            return self.tasks[res[0]].execute(res[1])
         except sr.UnknownValueError:
             return "I don't understand" 
         except sr.RequestError as e:
@@ -62,21 +61,14 @@ class Butler():
     
 
     def searchKeywords(self, input_string):
-        heuristicScores = []
-        topScore = 0
-        topKey = -1
-        for k in self.keywords:
-            score = 0
-            if 0 <= input_string.find(k):
-                score = 1
-            heuristicScores.append(score)
         idx = 0
-        for s in heuristicScores:
-            if s > topScore:
-                topKey = idx
+        for kw in self.keywords:
+            m = re.search(kw, input_string)
+            if m:
+               return idx,m
             idx+=1
 
-        return topKey
+        return None
 
     def talk(self, text):
         if text:
