@@ -44,7 +44,9 @@ class Butler():
             idx = self.searchKeywords(recognizedKeyword.strip())
 
 
-            recognizedKeyword = self.rec.recognize_sphinx(audio)
+            engine = self.rec.recognize_sphinx(audio, show_all=True)
+            hyp = engine.hyp()
+            recognizedKeywords = hyp.hypstr
             print("You: "+recognizedKeyword, flush=True)
             idx = self.searchKeywords(recognizedKeyword.strip())
 
