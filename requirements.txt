@@ -1,0 +1,4 @@
+pyaudio
+SpeechRecognition
+pocketsphinx==0.1.3
+pyttsx3

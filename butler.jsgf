@@ -1,0 +1,10 @@
+#JSGF V1.0;
+
+/**
+ * JSGF Grammar for English counting example
+ */
+
+grammar butler;
+public <command> = [<greeting>] <openCommand>;
+<greeting> = hello;
+<openCommand> = open chrome;

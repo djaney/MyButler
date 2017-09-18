@@ -1,0 +1,1 @@
+sudo docker run -a stdin --device /dev/snd:/dev/snd -v $(pwd):/app --privileged mybutler
