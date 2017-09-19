@@ -11,6 +11,7 @@ import atexit
 from Butler import Butler
 from tasks.Ping import Ping
 from tasks.OpenApps import OpenApps
+from tasks.Query import Query
 
 def main():
 
@@ -21,6 +22,7 @@ def main():
     butler = Butler()
     butler.addTask(Ping())
     butler.addTask(OpenApps())
+    butler.addTask(Query())
 
     # if stdin has data and no audio yet
     if not audio and select.select([sys.stdin,],[],[],0.0)[0]:
