@@ -9,7 +9,7 @@ import pyaudio
 import atexit
 
 from Butler import Butler
-from tasks.Ping import Ping 
+from tasks.Ping import Ping
 from tasks.OpenApps import OpenApps
 
 def main():
@@ -31,7 +31,7 @@ def main():
                 reply = butler.think(audio)
                 butler.talk(reply)
     else:
-        bulter.init()
+        butler.init()
         butler.ask()
  
 
