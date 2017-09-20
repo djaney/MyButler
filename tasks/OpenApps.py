@@ -12,6 +12,6 @@ class OpenApps(BaseTask):
         elif 'chrome':
             webbrowser.open('https://www.google.com')
         else:
-            return "I can'y open "+app
+            return "I can't open "+app
         return "Okay"
 
