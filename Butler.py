@@ -13,6 +13,7 @@ class Butler():
     keywords = []
     mic = None
     rec = None
+    name = "butler"
 
     def init(self, adjust_noise = True):
         os.system("sphinx_jsgf2fsg -jsgf butler.jsgf > butler.fsg")
@@ -32,9 +33,16 @@ class Butler():
                 self.talk(reply)
 
     def listen(self):
-        pass
+        stop = self.rec.listen_in_background(self.mic, self.background_callback)
+        return stop
 
-    def think(self, audio):
+    def background_callback(self, rec, audio):
+        if audio:
+            reply = self.think(audio, silent_failure=True, use_name=True)
+            self.talk(reply)
+
+
+    def think(self, audio, silent_failure=False, use_name=False):
         text = ""
         try:
 
@@ -43,7 +51,7 @@ class Butler():
                 kw.append((k,1.0))
          
             recognizedKeyword = self.rec.recognize_sphinx(audio,grammar="butler.jsgf")
-            idx = self.searchKeywords(recognizedKeyword.strip())
+            idx = self.searchKeywords(recognizedKeyword.strip(), use_name=use_name)
 
 
             engine = self.rec.recognize_sphinx(audio, show_all=True)
@@ -52,17 +60,23 @@ class Butler():
             print("You: "+recognizedKeyword, flush=True)
             res = self.searchKeywords(recognizedKeyword.strip())
             if res is None:
-                return "I don't understand " + recognizedKeyword.strip() 
+                if not silent_failure:
+                    return "I don't understand " + recognizedKeyword.strip() 
+            
             return self.tasks[res[0]].execute(res[1])
         except sr.UnknownValueError:
-            return "I don't understand" 
+            if not silent_failure:
+                return "I don't understand" 
         except sr.RequestError as e:
-            self.talk("error, {0}".format(e))
+            if not silent_failure:
+                return "error, {0}".format(e)
     
 
-    def searchKeywords(self, input_string):
+    def searchKeywords(self, input_string, use_name=False):
         idx = 0
         for kw in self.keywords:
+            if use_name:
+                kw = "hey "+self.name+" " + kw
             m = re.search(kw, input_string)
             if m:
                return idx,m

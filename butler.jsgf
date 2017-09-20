@@ -5,7 +5,9 @@
  */
 
 grammar butler;
-public <command> = (<c_open>|<c_search>|<c_query_time>);
+public <command> = <hey> (<c_open>|<c_search>|<c_query_time>);
+<name> = butler;
+<hey> = hey <name>;
 <c_open> = open (google|chrome);
 <c_search> = search;
 <c_query_header> = (whats|what is);

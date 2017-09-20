@@ -7,6 +7,7 @@ import speech_recognition as sr
 import pyttsx3 as ss
 import pyaudio
 import atexit
+import time
 
 from Butler import Butler
 from tasks.Ping import Ping
@@ -34,7 +35,10 @@ def main():
                 butler.talk(reply)
     else:
         butler.init()
-        butler.ask()
+        stop = butler.listen()
+
+        while True:
+            time.sleep(1)
  
 
 if '__main__' == __name__ :
