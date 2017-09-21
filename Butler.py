@@ -112,6 +112,7 @@ class Butler():
         for m in response.get("Messages", []):
             msg = m.get("Body")
             if msg:
+                self.sqs.delete_message(QueueUrl=self.sqsUrl, ReceiptHandle=m.get("ReceiptHandle"))
                 self.talk(msg)
     def addTask(self, task):
         self.tasks.append(task)

@@ -41,7 +41,7 @@ def main():
 
         while True:
             butler.checkPassive()
-            time.sleep(10)
+            time.sleep(60)
  
 
 if '__main__' == __name__ :
