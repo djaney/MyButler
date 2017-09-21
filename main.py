@@ -40,6 +40,7 @@ def main():
         print("ready to listen")
 
         while True:
+            butler.checkPassive()
             time.sleep(1)
  
 

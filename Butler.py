@@ -99,7 +99,10 @@ class Butler():
                 speech.runAndWait()
             else:
                 self.tts.get_pronunciation(text)
-            
+    
+    def checkPassive(self):
+        pass
+
     def addTask(self, task):
         self.tasks.append(task)
         self.keywords.append(task.getKeyword())
