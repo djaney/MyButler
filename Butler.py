@@ -66,8 +66,8 @@ class Butler():
             if res is None:
                 if not silent_failure:
                     return "I don't understand " + recognizedKeyword.strip() 
-            
-            return self.tasks[res[0]].execute(res[1])
+            else:            
+                return self.tasks[res[0]].execute(res[1])
         except sr.UnknownValueError:
             if not silent_failure:
                 return "I don't understand" 
