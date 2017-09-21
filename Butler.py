@@ -89,8 +89,8 @@ class Butler():
         return None
 
     def talk(self, text):
-        print("says: " + text, flush=True)
         if text:
+            print("says: " + text, flush=True)
             if self.espeak:
                 speech = ss.init("espeak", True)
                 speech.setProperty("voice", "en-rp+f4")
