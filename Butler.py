@@ -16,12 +16,14 @@ class Butler():
     rec = None
     tts = None
     name = "jude"
+    espeak = True
 
-    def init(self, adjust_noise = True):
+    def init(self, adjust_noise = True, espeak = True):
         os.system("sphinx_jsgf2fsg -jsgf butler.jsgf > butler.fsg")
         self.rec = sr.Recognizer()
         self.mic = sr.Microphone(device_index=4)
         self.tts = TextToSpeech()
+        self.espeak = espeak
         if adjust_noise:
             with self.mic as source:
                 self.rec.adjust_for_ambient_noise(source)
@@ -87,14 +89,16 @@ class Butler():
         return None
 
     def talk(self, text):
+        print("says: " + text, flush=True)
         if text:
-            #speech = ss.init("espeak", True)
-            #speech.setProperty("voice", "en-rp+f4")
-            #speech.setProperty("rate", 140)
-            #speech.say(text)
-            #speech.runAndWait()
-            self.tts.get_pronunciation(text)
-            print("says: " + text, flush=True)
+            if self.espeak:
+                speech = ss.init("espeak", True)
+                speech.setProperty("voice", "en-rp+f4")
+                speech.setProperty("rate", 140)
+                speech.say(text)
+                speech.runAndWait()
+            else:
+                self.tts.get_pronunciation(text)
             
     def addTask(self, task):
         self.tasks.append(task)

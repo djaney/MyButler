@@ -18,6 +18,7 @@ def main():
 
     text = ""
     audio = None
+    use_espeak = True
     r = sr.Recognizer()
 
     butler = Butler()
@@ -28,15 +29,14 @@ def main():
     # if stdin has data and no audio yet
     if not audio and select.select([sys.stdin,],[],[],0.0)[0]:
         with os.fdopen(sys.stdin.fileno(), 'rb') as input_file:
-            butler.init(adjust_noise=False)
+            butler.init(adjust_noise=Falsei, espeak = use_espeak)
             with sr.AudioFile(input_file) as source:
                 audio = r.record(source)
                 reply = butler.think(audio)
                 butler.talk(reply)
     else:
-        butler.init()
+        butler.init(espeak = use_espeak)
         stop = butler.listen()
-        butler.talk("hello")
 
         while True:
             time.sleep(1)
