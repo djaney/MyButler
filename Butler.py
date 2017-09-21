@@ -93,7 +93,7 @@ class Butler():
             #speech.setProperty("rate", 140)
             #speech.say(text)
             #speech.runAndWait()
-            tts.get_pronunciation
+            self.tts.get_pronunciation(text)
             print("says: " + text, flush=True)
             
     def addTask(self, task):

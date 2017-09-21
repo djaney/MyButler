@@ -36,6 +36,7 @@ def main():
     else:
         butler.init()
         stop = butler.listen()
+        butler.talk("hello")
 
         while True:
             time.sleep(1)

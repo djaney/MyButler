@@ -30,7 +30,7 @@ class TextToSpeech:
         for word in re.findall(r"[\w']+",str_input.upper()):
             if word in self._l:
                 list_pron += self._l[word]
-        print(list_pron)
+        #print(list_pron)
         delay=0
         for pron in list_pron:
             pron = pron.lower()
@@ -57,8 +57,7 @@ class TextToSpeech:
             p.terminate()
             return
         except:
-            pass
-    
+            pass 
  
  
 
