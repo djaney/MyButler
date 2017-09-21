@@ -34,15 +34,8 @@ class TextToSpeech:
         delay=0
         for pron in list_pron:
             pron = pron.lower()
-            try:
-                with wave.open(self.path+"/sounds/"+pron+".wav", 'rb') as wf:
-                    _thread.start_new_thread( self._play_audio, (pron,delay,))
-                    frames = wf.getnframes()
-                    rate = wf.getframerate()
-                    duration = frames / float(rate)
-                    delay += duration
-            except:
-                pass
+            _thread.start_new_thread( self._play_audio, (pron,delay,))
+            delay += 0.145
     
     def _play_audio(self, sound, delay):
         try:

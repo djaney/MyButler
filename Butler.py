@@ -6,6 +6,7 @@ import os
 import sys
 import select
 import re
+from tts.TextToSpeech import TextToSpeech
 
 class Butler():
 
@@ -13,13 +14,14 @@ class Butler():
     keywords = []
     mic = None
     rec = None
-    name = "butler"
+    tts = None
+    name = "jude"
 
     def init(self, adjust_noise = True):
         os.system("sphinx_jsgf2fsg -jsgf butler.jsgf > butler.fsg")
         self.rec = sr.Recognizer()
         self.mic = sr.Microphone(device_index=4)
-        
+        self.tts = TextToSpeech()
         if adjust_noise:
             with self.mic as source:
                 self.rec.adjust_for_ambient_noise(source)
@@ -86,12 +88,13 @@ class Butler():
 
     def talk(self, text):
         if text:
-            speech = ss.init("espeak", True)
-            speech.setProperty("voice", "en-rp+f4")
-            speech.setProperty("rate", 140)
-            speech.say(text)
+            #speech = ss.init("espeak", True)
+            #speech.setProperty("voice", "en-rp+f4")
+            #speech.setProperty("rate", 140)
+            #speech.say(text)
+            #speech.runAndWait()
+            tts.get_pronunciation
             print("says: " + text, flush=True)
-            speech.runAndWait()
             
     def addTask(self, task):
         self.tasks.append(task)

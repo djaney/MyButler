@@ -6,7 +6,7 @@
 
 grammar butler;
 public <command> = <hey> (<c_open>|<c_search>|<c_query_time>);
-<name> = butler;
+<name> = jude;
 <hey> = hey <name>;
 <c_open> = open (google|chrome);
 <c_search> = search;
