@@ -108,12 +108,15 @@ class Butler():
     
     def checkPassive(self):
         response = self.sqs.receive_message(QueueUrl=self.sqsUrl)
-        print(response)
+        toSay = []
         for m in response.get("Messages", []):
             msg = m.get("Body")
             if msg:
-                self.sqs.delete_message(QueueUrl=self.sqsUrl, ReceiptHandle=m.get("ReceiptHandle"))
-                self.talk(msg)
+                self.sqs.delete_message(QueueUrl=self.sqsUrl,
+                        ReceiptHandle=m.get("ReceiptHandle"))
+                toSay.append(msg)
+        for s in toSay:
+            self.talk(s)
     def addTask(self, task):
         self.tasks.append(task)
         self.keywords.append(task.getKeyword())
