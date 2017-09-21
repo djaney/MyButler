@@ -37,6 +37,7 @@ def main():
     else:
         butler.init(espeak = use_espeak)
         stop = butler.listen()
+        print("ready to listen")
 
         while True:
             time.sleep(1)
