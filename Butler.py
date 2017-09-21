@@ -6,6 +6,7 @@ import os
 import sys
 import select
 import re
+import boto3
 from tts.TextToSpeech import TextToSpeech
 
 class Butler():
@@ -17,6 +18,9 @@ class Butler():
     tts = None
     name = "jude"
     espeak = True
+    sqs = None
+    sqsUrl = "https://sqs.ap-northeast-1.amazonaws.com/132806373247/mybutler"
+    sqsRegion = "ap-northeast-1"
 
     def init(self, adjust_noise = True, espeak = True):
         os.system("sphinx_jsgf2fsg -jsgf butler.jsgf > butler.fsg")
@@ -24,6 +28,8 @@ class Butler():
         self.mic = sr.Microphone(device_index=4)
         self.tts = TextToSpeech()
         self.espeak = espeak
+        botoSess = boto3.Session(profile_name='mybutler')
+        self.sqs = botoSess.client("sqs")
         if adjust_noise:
             with self.mic as source:
                 self.rec.adjust_for_ambient_noise(source)
@@ -101,8 +107,12 @@ class Butler():
                 self.tts.get_pronunciation(text)
     
     def checkPassive(self):
-        pass
-
+        response = self.sqs.receive_message(QueueUrl=self.sqsUrl)
+        print(response)
+        for m in response.get("Messages", []):
+            msg = m.get("Body")
+            if msg:
+                self.talk(msg)
     def addTask(self, task):
         self.tasks.append(task)
         self.keywords.append(task.getKeyword())
