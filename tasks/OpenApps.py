@@ -14,4 +14,5 @@ class OpenApps(BaseTask):
         else:
             return "I can't open "+app
         return "Okay"
-
+    def getKeySpotting(self):
+        return [("open google",1.0), ("open chrome", 1.0)]

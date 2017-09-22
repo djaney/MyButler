@@ -4,4 +4,7 @@ class BaseTask(object):
         raise NotImplementedError("required")
     def execute(self):
         raise NotImplementedError("required")
+
+    def getKeySpotting(self):
+        return []
     

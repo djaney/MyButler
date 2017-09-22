@@ -6,3 +6,6 @@ class Ping(BaseTask):
     def execute(self, match):
         return "hi!"
 
+    def getKeySpotting(self):
+        return [("hello",1.0)]
+

@@ -41,6 +41,7 @@ def main():
 
         while True:
             butler.checkPassive()
+            print("-----")
             time.sleep(1)
  
 

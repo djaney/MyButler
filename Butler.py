@@ -23,7 +23,7 @@ class Butler():
     sqsRegion = "ap-northeast-1"
 
     def init(self, adjust_noise = True, espeak = True):
-        os.system("sphinx_jsgf2fsg -jsgf butler.jsgf > butler.fsg")
+        #os.system("sphinx_jsgf2fsg -jsgf butler.jsgf > butler.fsg")
         self.rec = sr.Recognizer()
         self.mic = sr.Microphone(device_index=None)
         self.tts = TextToSpeech()
@@ -43,7 +43,8 @@ class Butler():
                 self.talk(reply)
 
     def listen(self):
-        stop = self.rec.listen_in_background(self.mic, self.background_callback)
+        stop = self.rec.listen_in_background(self.mic,
+                self.background_callback, phrase_time_limit=5)
         return stop
 
     def background_callback(self, rec, audio):
@@ -55,25 +56,23 @@ class Butler():
     def think(self, audio, silent_failure=False, use_name=False):
         text = ""
         try:
-
-            kw = []
-            for k in self.keywords:
-                kw.append((k,1.0))
-         
-            recognizedKeyword = self.rec.recognize_sphinx(audio,grammar="butler.jsgf")
+            keywords = [("hey "+self.name, 1.0)]
+            for t in self.tasks:
+                keywords+=t.getKeySpotting()
+            recognizedKeyword = self.rec.recognize_sphinx(audio,
+                    keyword_entries=keywords)
             idx = self.searchKeywords(recognizedKeyword.strip(), use_name=use_name)
-
-
             engine = self.rec.recognize_sphinx(audio, show_all=True)
             hyp = engine.hyp()
             recognizedKeywords = hyp.hypstr
-            print("You: "+recognizedKeyword, flush=True)
-            res = self.searchKeywords(recognizedKeyword.strip())
-            if res is None:
-                if not silent_failure:
-                    return "I don't understand " + recognizedKeyword.strip() 
-            else:            
-                return self.tasks[res[0]].execute(res[1])
+            if recognizedKeywords:
+                print("You: "+recognizedKeyword, flush=True)
+                res = self.searchKeywords(recognizedKeyword.strip())
+                if res is None:
+                    if not silent_failure:
+                        return "I don't understand " + recognizedKeyword.strip() 
+                else:            
+                    return self.tasks[res[0]].execute(res[1])
         except sr.UnknownValueError:
             if not silent_failure:
                 return "I don't understand" 
@@ -96,7 +95,7 @@ class Butler():
 
     def talk(self, text):
         if text:
-            print("says: " + text, flush=True)
+            print(self.name+": " + text, flush=True)
             if self.espeak:
                 speech = ss.init("espeak", True)
                 speech.setProperty("voice", "en-rp+f4")
@@ -107,17 +106,20 @@ class Butler():
                 self.tts.get_pronunciation(text)
     
     def checkPassive(self):
-        response = self.sqs.receive_message(QueueUrl=self.sqsUrl,
-                WaitTimeSeconds=20, MaxNumberOfMessages=10)
-        toSay = []
-        for m in response.get("Messages", []):
-            msg = m.get("Body")
-            if msg:
-                self.sqs.delete_message(QueueUrl=self.sqsUrl,
-                        ReceiptHandle=m.get("ReceiptHandle"))
-                toSay.append(msg)
-        for s in toSay:
-            self.talk(s)
+        try:
+            response = self.sqs.receive_message(QueueUrl=self.sqsUrl,
+                    WaitTimeSeconds=20, MaxNumberOfMessages=10)
+            toSay = []
+            for m in response.get("Messages", []):
+                msg = m.get("Body")
+                if msg:
+                    self.sqs.delete_message(QueueUrl=self.sqsUrl,
+                            ReceiptHandle=m.get("ReceiptHandle"))
+                    toSay.append(msg)
+            for s in toSay:
+                self.talk(s)
+        except:
+            pass
     def addTask(self, task):
         self.tasks.append(task)
         self.keywords.append(task.getKeyword())

@@ -11,4 +11,5 @@ class Query(BaseTask):
         else:
             return "What is " + q
         return "Okay"
-
+    def getKeySpotting(self):
+        return [("what is the time", 1.0),("whats the time", 1.0)]
