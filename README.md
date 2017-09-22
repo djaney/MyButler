@@ -8,3 +8,4 @@ Note: I tried to put this on docker but I'm having issues with the sound. So for
 1. Custom text-to-speech using a real voice
 1. Create tasks using IFTTT
 1. Recieve IFTTT notifications
+1. improve speech recognition

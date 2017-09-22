@@ -25,7 +25,7 @@ class Butler():
     def init(self, adjust_noise = True, espeak = True):
         os.system("sphinx_jsgf2fsg -jsgf butler.jsgf > butler.fsg")
         self.rec = sr.Recognizer()
-        self.mic = sr.Microphone(device_index=4)
+        self.mic = sr.Microphone(device_index=None)
         self.tts = TextToSpeech()
         self.espeak = espeak
         botoSess = boto3.Session(profile_name='mybutler')
@@ -66,6 +66,7 @@ class Butler():
 
             engine = self.rec.recognize_sphinx(audio, show_all=True)
             hyp = engine.hyp()
+            print(hyp)
             recognizedKeywords = hyp.hypstr
             print("You: "+recognizedKeyword, flush=True)
             res = self.searchKeywords(recognizedKeyword.strip())
@@ -107,7 +108,9 @@ class Butler():
                 self.tts.get_pronunciation(text)
     
     def checkPassive(self):
-        response = self.sqs.receive_message(QueueUrl=self.sqsUrl)
+        response = self.sqs.receive_message(QueueUrl=self.sqsUrl,
+                WaitTimeSeconds=20, MaxNumberOfMessages=10)
+        print(response)
         toSay = []
         for m in response.get("Messages", []):
             msg = m.get("Body")
