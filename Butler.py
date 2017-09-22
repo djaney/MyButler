@@ -66,7 +66,6 @@ class Butler():
 
             engine = self.rec.recognize_sphinx(audio, show_all=True)
             hyp = engine.hyp()
-            print(hyp)
             recognizedKeywords = hyp.hypstr
             print("You: "+recognizedKeyword, flush=True)
             res = self.searchKeywords(recognizedKeyword.strip())
@@ -110,7 +109,6 @@ class Butler():
     def checkPassive(self):
         response = self.sqs.receive_message(QueueUrl=self.sqsUrl,
                 WaitTimeSeconds=20, MaxNumberOfMessages=10)
-        print(response)
         toSay = []
         for m in response.get("Messages", []):
             msg = m.get("Body")
