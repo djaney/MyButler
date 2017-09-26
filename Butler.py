@@ -88,7 +88,7 @@ class Butler():
                 print("request error, {0}".format(e))
         elif "google"==self.stt_engine:
             try:
-                text = self.rec.recognize_google_cloud(audio)
+                text = self.rec.recognize_google_cloud(audio,preferred_phrases=["hey "+self.name.lower()])
                 return self.processText(text, use_name)
             except sr.UnknownValueError as e:
                 print("can't understand, {0}".format(e))
@@ -107,7 +107,7 @@ class Butler():
         idx = 0
         for kw in self.keywords:
             if use_name:
-                kw = "hey "+self.name.lower()+" " + kw
+                kw = "hey "+self.name.lower()+" .*" + kw
             m = re.search(kw, input_string.lower())
             if m:
                return idx,m

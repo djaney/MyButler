@@ -4,7 +4,7 @@ import webbrowser
 import urllib
 class Search(BaseTask):
     def getKeyword(self):
-        return "(look for|what is|whats|search for|search) (a|an)? (.*)"
+        return "(looking for|look for|what is|whats|search for|search) (a |an ){0,1}(.*)"
 
     def execute(self, match):
         q = match.group(3).strip()
