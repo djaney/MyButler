@@ -1,6 +1,6 @@
 import speech_recognition as sr
 import pyttsx3 as ss
-import pyaudio
+import pyglet
 
 import os
 import sys
@@ -16,23 +16,41 @@ class Butler():
     mic = None
     rec = None
     tts = None
-    name = "jude"
-    espeak = True
+    stt = None
+    name = "Jude"
+    tts_engine = None
+    stt_engine = None
+    push_to_talk = True
     sqs = None
     sqsUrl = "https://sqs.ap-northeast-1.amazonaws.com/132806373247/mybutler"
     sqsRegion = "ap-northeast-1"
+    energy = 300
 
-    def init(self, adjust_noise = True, espeak = True):
+    def init(self, adjust_noise = True, tts = "espeak", stt = "cmusphinx",
+            push_to_talk = True, energy = 300):
         #os.system("sphinx_jsgf2fsg -jsgf butler.jsgf > butler.fsg")
         self.rec = sr.Recognizer()
         self.mic = sr.Microphone(device_index=None)
         self.tts = TextToSpeech()
-        self.espeak = espeak
-        botoSess = boto3.Session(profile_name='mybutler')
-        self.sqs = botoSess.client("sqs")
-        if adjust_noise:
-            with self.mic as source:
-                self.rec.adjust_for_ambient_noise(source)
+        self.tts_engine = tts
+        self.stt_engine = stt
+        self.push_to_talk = push_to_talk
+        self.energy = energy
+        self.botoSess = boto3.Session(profile_name='mybutler')
+        self.sqs = self.botoSess.client("sqs")
+        self.google_credentials = None
+
+        if 0 == self.energy:
+            if adjust_noise:
+                with self.mic as source:
+                    self.rec.adjust_for_ambient_noise(source)
+                    print("Energy: "+ str(self.rec.energy_threshold))
+        else:
+            self.rec.dynamic_energy_threshold = False
+            self.rec.energy_threshold = self.energy
+    
+    def setGoogleCredentials(self, cred):
+        self.google_credentials = cred
 
     def ask(self):
         self.talk("Yes Zen?")
@@ -48,63 +66,68 @@ class Butler():
         return stop
 
     def background_callback(self, rec, audio):
+        print("--voice detected--", flush=True)
         if audio:
-            reply = self.think(audio, silent_failure=True, use_name=True)
-            self.talk(reply)
+            reply = self.think(audio,use_name=True)
+            if reply:
+                self.talk(reply)
 
 
     def think(self, audio, silent_failure=False, use_name=False):
         text = ""
-        try:
-            keywords = [("hey "+self.name, 1.0)]
-            for t in self.tasks:
-                keywords+=t.getKeySpotting()
-            recognizedKeyword = self.rec.recognize_sphinx(audio,
-                    keyword_entries=keywords)
-            idx = self.searchKeywords(recognizedKeyword.strip(), use_name=use_name)
-            engine = self.rec.recognize_sphinx(audio, show_all=True)
-            hyp = engine.hyp()
-            recognizedKeywords = hyp.hypstr
-            if recognizedKeywords:
-                print("You: "+recognizedKeyword, flush=True)
-                res = self.searchKeywords(recognizedKeyword.strip())
-                if res is None:
-                    if not silent_failure:
-                        return "I don't understand " + recognizedKeyword.strip() 
-                else:            
-                    return self.tasks[res[0]].execute(res[1])
-        except sr.UnknownValueError:
-            if not silent_failure:
+        if "cmusphinx"==self.stt_engine:
+            try:
+                keywords = [("hey "+self.name, 1.0)]
+                for t in self.tasks:
+                    keywords+=t.getKeySpotting()
+                text = self.rec.recognize_sphinx(audio,keyword_entries=keywords)
+                return self.processText(text, use_name)
+            except sr.UnknownValueError:
                 return "I don't understand" 
-        except sr.RequestError as e:
-            if not silent_failure:
+            except sr.RequestError as e:
                 return "error, {0}".format(e)
-    
+        elif "google"==self.stt_engine:
+            try:
+                text = self.rec.recognize_google_cloud(audio)
+                return self.processText(text, use_name)
+            except sr.UnknownValueError:
+                return "even google does not understand"
+            except sr.RequestError as e:
+                print("Could not request results from Google Cloud Speech service; {0}".format(e))
+    def processText(self, text, use_name):
+        if text:
+            print("You: "+text,flush=True)
+            res = self.searchKeywords(text.strip(), use_name=use_name)
+            if res is None:
+                print("Not understood: "+text)
+            else:
+                return self.tasks[res[0]].execute(res[1])
 
     def searchKeywords(self, input_string, use_name=False):
         idx = 0
         for kw in self.keywords:
             if use_name:
-                kw = "hey "+self.name+" " + kw
-            m = re.search(kw, input_string)
+                kw = "hey "+self.name.lower()+" " + kw
+            m = re.search(kw, input_string.lower())
             if m:
                return idx,m
             idx+=1
 
         return None
-
-    def talk(self, text):
+    
+    def talk(self,text):
         if text:
             print(self.name+": " + text, flush=True)
-            if self.espeak:
+            if "espeak"==self.tts_engine:
                 speech = ss.init("espeak", True)
                 speech.setProperty("voice", "en-rp+f4")
                 speech.setProperty("rate", 140)
                 speech.say(text)
                 speech.runAndWait()
-            else:
+            elif "default"==self.tts_engine:
                 self.tts.get_pronunciation(text)
-    
+            else:
+                pass
     def checkPassive(self):
         try:
             response = self.sqs.receive_message(QueueUrl=self.sqsUrl,
