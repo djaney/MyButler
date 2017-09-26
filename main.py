@@ -13,6 +13,7 @@ from Butler import Butler
 from tasks.Ping import Ping
 from tasks.OpenApps import OpenApps
 from tasks.Query import Query
+from tasks.Search import Search
 
 def main():
 
@@ -42,6 +43,7 @@ def main():
     #butler.addTask(Ping())
     butler.addTask(OpenApps())
     butler.addTask(Query())
+    butler.addTask(Search())
     # if stdin has data and no audio yet
     if not audio and select.select([sys.stdin,],[],[],0.0)[0]:
         with os.fdopen(sys.stdin.fileno(), 'rb') as input_file:

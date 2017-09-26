@@ -82,18 +82,18 @@ class Butler():
                     keywords+=t.getKeySpotting()
                 text = self.rec.recognize_sphinx(audio,keyword_entries=keywords)
                 return self.processText(text, use_name)
-            except sr.UnknownValueError:
-                return "I don't understand" 
+            except sr.UnknownValueError as e:
+                print("can't understand, {0}".format(e))
             except sr.RequestError as e:
-                return "error, {0}".format(e)
+                print("request error, {0}".format(e))
         elif "google"==self.stt_engine:
             try:
                 text = self.rec.recognize_google_cloud(audio)
                 return self.processText(text, use_name)
-            except sr.UnknownValueError:
-                return "even google does not understand"
+            except sr.UnknownValueError as e:
+                print("can't understand, {0}".format(e))
             except sr.RequestError as e:
-                print("Could not request results from Google Cloud Speech service; {0}".format(e))
+                print("request error {0}".format(e))
     def processText(self, text, use_name):
         if text:
             print("You: "+text,flush=True)
