@@ -52,7 +52,6 @@ class Butler():
             self.rec.dynamic_energy_threshold = False
             self.rec.energy_threshold = self.energy
     def isAttention(self):
-        print(self.getTimeSinceLastAttention(), self.attention_span)
         return False if self.getTimeSinceLastAttention() > self.attention_span else True
     def getTimeSinceLastAttention(self):
         return time.time() - self.__last_attention
