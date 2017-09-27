@@ -1,6 +1,7 @@
 import speech_recognition as sr
 import pyttsx3 as ss
-import pyglet
+import pyaudio
+import wave
 
 import os
 import sys
@@ -9,6 +10,7 @@ import re
 import boto3
 import time
 from tts.TextToSpeech import TextToSpeech
+from ttspico import TtsEngine as Pico
 
 class Butler():
 
@@ -134,6 +136,10 @@ class Butler():
                 speech.setProperty("rate", 140)
                 speech.say(text)
                 speech.runAndWait()
+            if "pico"==self.tts_engine:
+                pico = Pico()
+                pico.rate = 100
+                pico.speak(text, self.__picoCallback)
             elif "default"==self.tts_engine:
                 self.tts.get_pronunciation(text)
             else:
@@ -156,3 +162,16 @@ class Butler():
     def addTask(self, task):
         self.tasks.append(task)
         self.keywords.append(task.getKeyword())
+
+    def __picoCallback(self, format, audio, fin):
+        p = pyaudio.PyAudio()
+        stream = p.open(rate=format[0],
+                format=pyaudio.paInt16,
+                channels=format[2],
+                output=True)
+        stream.write(audio)
+        stream.stop_stream()
+        stream.close()
+        p.terminate()
+        
+        
