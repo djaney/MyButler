@@ -25,11 +25,13 @@ class Butler():
     stt_engine = None
     push_to_talk = True
     sqs = None
-    sqsUrl = "https://sqs.ap-northeast-1.amazonaws.com/132806373247/mybutler"
-    sqsRegion = "ap-northeast-1"
     energy = 300
     __last_attention = 0
     attention_span = 5
+
+    def __init__(self):
+        self.sqsUrl = os.environ["SQS_URL"]
+        self.sqsRegion = os.environ["SQS_REGION"]
 
     def init(self, adjust_noise = True, tts = "espeak", stt = "cmusphinx",
             push_to_talk = True, energy = 300):

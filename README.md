@@ -10,6 +10,8 @@ Note: I tried to put this on docker but I'm having issues with the sound. So for
 ## setup
 1. setup google cloud credentials for speech
 1. set environment variable `OPENWEATHERMAP_KEY` for weather api key from openweathermap.org
+1. set environment variable `SQS_URL` for notification queue
+1. set environment variable `SQS_REGION` for notification queue
 
 ## commands
 1. what's the weather 
