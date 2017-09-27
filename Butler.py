@@ -7,6 +7,7 @@ import sys
 import select
 import re
 import boto3
+import time
 from tts.TextToSpeech import TextToSpeech
 
 class Butler():
@@ -25,6 +26,8 @@ class Butler():
     sqsUrl = "https://sqs.ap-northeast-1.amazonaws.com/132806373247/mybutler"
     sqsRegion = "ap-northeast-1"
     energy = 300
+    __last_attention = 0
+    attention_span = 5
 
     def init(self, adjust_noise = True, tts = "espeak", stt = "cmusphinx",
             push_to_talk = True, energy = 300):
@@ -48,7 +51,11 @@ class Butler():
         else:
             self.rec.dynamic_energy_threshold = False
             self.rec.energy_threshold = self.energy
-    
+    def isAttention(self):
+        print(self.getTimeSinceLastAttention(), self.attention_span)
+        return False if self.getTimeSinceLastAttention() > self.attention_span else True
+    def getTimeSinceLastAttention(self):
+        return time.time() - self.__last_attention
     def setGoogleCredentials(self, cred):
         self.google_credentials = cred
 
@@ -75,6 +82,9 @@ class Butler():
 
     def think(self, audio, silent_failure=False, use_name=False):
         text = ""
+        # if you already got the attention, no need to say the name
+        if self.isAttention():
+            use_name=False
         if "cmusphinx"==self.stt_engine:
             try:
                 keywords = [("hey "+self.name, 1.0)]
@@ -91,7 +101,7 @@ class Butler():
                 text = self.rec.recognize_google_cloud(audio,preferred_phrases=["hey "+self.name.lower()])
                 return self.processText(text, use_name)
             except sr.UnknownValueError as e:
-                print("can't understand, {0}".format(e))
+                print("--no action--".format(e))
             except sr.RequestError as e:
                 print("request error {0}".format(e))
     def processText(self, text, use_name):
@@ -99,8 +109,9 @@ class Butler():
             print("You: "+text,flush=True)
             res = self.searchKeywords(text.strip(), use_name=use_name)
             if res is None:
-                print("Not understood: "+text)
+                pass
             else:
+                self.__last_attention = time.time()
                 return self.tasks[res[0]].execute(res[1])
 
     def searchKeywords(self, input_string, use_name=False):
