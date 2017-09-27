@@ -14,18 +14,16 @@ from tasks.Ping import Ping
 from tasks.OpenApps import OpenApps
 from tasks.Query import Query
 from tasks.Search import Search
+from tasks.Weather import WeatherNow, WeatherForecast
 
 def main():
 
 
     parser = OptionParser(description='Welcome to my butler')
     parser.add_option("-t", "--tts", type=str, default="espeak", help='Text to speech engine to use')
-    parser.add_option("-s", "--stt", type=str, default="cmusphinx",
-            help='Speech to text engine')
-    parser.add_option("-p", "--pushtotalk", default=True,
-            help='Push to talk')
-    parser.add_option("-e", "--energy", default=700,type=int,
-            help='Energy required to activate talk')
+    parser.add_option("-s", "--stt", type=str, default="cmusphinx", help='Speech to text engine')
+    parser.add_option("-p", "--pushtotalk", default=True, help='Push to talk')
+    parser.add_option("-e", "--energy", default=700,type=int, help='Energy required to activate talk')
 
 
     args = parser.parse_args()
@@ -44,6 +42,9 @@ def main():
     butler.addTask(OpenApps())
     butler.addTask(Query())
     butler.addTask(Search())
+    butler.addTask(WeatherForecast())
+    butler.addTask(WeatherNow())
+
     # if stdin has data and no audio yet
     if not audio and select.select([sys.stdin,],[],[],0.0)[0]:
         with os.fdopen(sys.stdin.fileno(), 'rb') as input_file:
