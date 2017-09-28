@@ -116,7 +116,6 @@ class Butler():
             if res is None:
                 pass
             else:
-                self.__last_attention = time.time()
                 return self.tasks[res[0]].execute(res[1])
 
     def searchKeywords(self, input_string, use_name=False):
@@ -148,6 +147,8 @@ class Butler():
                 self.tts.get_pronunciation(text)
             else:
                 pass
+        
+            self.__last_attention = time.time()
     def checkPassive(self):
         try:
             response = self.sqs.receive_message(QueueUrl=self.sqsUrl,
