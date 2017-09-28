@@ -1,4 +1,4 @@
-from .BaseTask import BaseTask
+from BaseTask import BaseTask
 from datetime import datetime
 class Query(BaseTask):
     def getKeyword(self):

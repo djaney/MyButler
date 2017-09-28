@@ -10,11 +10,9 @@ import atexit
 import time
 
 from Butler import Butler
-from tasks.Ping import Ping
-from tasks.OpenApps import OpenApps
-from tasks.Query import Query
-from tasks.Search import Search
-from tasks.Weather import WeatherNow, WeatherForecast
+from packages.computer import loader as PackageComputer
+from packages.chrome import loader as PackageChrome
+from packages.ask import loader as PackageAsk
 
 def main():
 
@@ -38,12 +36,10 @@ def main():
     r = sr.Recognizer()
 
     butler = Butler()
-    #butler.addTask(Ping())
-    butler.addTask(OpenApps())
-    butler.addTask(Query())
-    butler.addTask(Search())
-    butler.addTask(WeatherForecast())
-    butler.addTask(WeatherNow())
+    butler.loadPackage(PackageComputer)
+    butler.loadPackage(PackageChrome)
+    butler.loadPackage(PackageAsk)
+
 
     # if stdin has data and no audio yet
     if not audio and select.select([sys.stdin,],[],[],0.0)[0]:

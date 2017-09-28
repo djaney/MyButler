@@ -1,4 +1,4 @@
-from .BaseTask import BaseTask
+from BaseTask import BaseTask
 import os
 import webbrowser
 import urllib

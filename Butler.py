@@ -81,6 +81,7 @@ class Butler():
             reply = self.think(audio,use_name=True)
             if reply:
                 self.talk(reply)
+            
 
 
     def think(self, audio, silent_failure=False, use_name=False):
@@ -88,6 +89,7 @@ class Butler():
         # if you already got the attention, no need to say the name
         if self.isAttention():
             use_name=False
+            
         if "cmusphinx"==self.stt_engine:
             try:
                 keywords = [("hey "+self.name, 1.0)]
@@ -161,9 +163,13 @@ class Butler():
                 self.talk(s)
         except:
             pass
-    def addTask(self, task):
+    def loadTask(self, task):
         self.tasks.append(task)
         self.keywords.append(task.getKeyword())
+
+    def loadPackage(self, package):
+        for t in package.load():
+            self.loadTask(t)
 
     def __picoCallback(self, format, audio, fin):
         p = pyaudio.PyAudio()
