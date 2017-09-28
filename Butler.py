@@ -139,16 +139,17 @@ class Butler():
                 speech.setProperty("rate", 140)
                 speech.say(text)
                 speech.runAndWait()
+                self.__last_attention = time.time()
             if "pico"==self.tts_engine:
                 pico = Pico()
                 pico.rate = 100
                 pico.speak(text, self.__picoCallback)
             elif "default"==self.tts_engine:
                 self.tts.get_pronunciation(text)
+                self.__last_attention = time.time()
             else:
                 pass
         
-            self.__last_attention = time.time()
     def checkPassive(self):
         try:
             response = self.sqs.receive_message(QueueUrl=self.sqsUrl,
@@ -182,5 +183,7 @@ class Butler():
         stream.stop_stream()
         stream.close()
         p.terminate()
+        if fin:
+            self.__last_attention = time.time()
         
         
