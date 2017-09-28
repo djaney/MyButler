@@ -6,6 +6,7 @@ Note: I tried to put this on docker but I'm having issues with the sound. So for
 
 ## Todo
 1. Push to talk
+1. group tasks into packages so that I will only have to add packages instead of each individual task.
 
 ## setup
 1. setup google cloud credentials for speech
