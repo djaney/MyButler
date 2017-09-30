@@ -83,6 +83,28 @@ class Butler():
                 self.talk(reply)
             
 
+    def speechToText(self, audio):
+        text = ""
+        if "cmusphinx"==self.stt_engine:
+            try:
+                keywords = [("hey "+self.name, 1.0)]
+                for t in self.tasks:
+                    keywords+=t.getKeySpotting()
+                text = self.rec.recognize_sphinx(audio,keyword_entries=keywords)
+            except sr.UnknownValueError as e:
+                print("can't understand, {0}".format(e))
+            except sr.RequestError as e:
+                print("request error, {0}".format(e))
+        elif "google"==self.stt_engine:
+            try:
+                text = self.rec.recognize_google_cloud(audio,preferred_phrases=["hey "+self.name.lower()])
+            except sr.UnknownValueError as e:
+                print("--no action--".format(e))
+            except sr.RequestError as e:
+                print("request error {0}".format(e))
+        else:
+            print("invalid stt engine")
+        return text
 
     def think(self, audio, silent_failure=False, use_name=False):
         text = ""
@@ -118,6 +140,7 @@ class Butler():
             else:
                 task = self.tasks[res[0]]
                 if task.isConversation():
+                    task.converse(self)
                     pass
                 else:
                     return task.execute(res[1])
