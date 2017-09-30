@@ -116,7 +116,11 @@ class Butler():
             if res is None:
                 pass
             else:
-                return self.tasks[res[0]].execute(res[1])
+                task = self.tasks[res[0]]
+                if task.isConversation():
+                    pass
+                else:
+                    return task.execute(res[1])
 
     def searchKeywords(self, input_string, use_name=False):
         idx = 0
