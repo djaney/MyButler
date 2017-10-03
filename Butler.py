@@ -46,6 +46,7 @@ class Butler():
         self.botoSess = boto3.Session(profile_name='mybutler')
         self.sqs = self.botoSess.client("sqs")
         self.google_credentials = None
+        self.conservative = True
 
         if 0 == self.energy:
             if adjust_noise:
@@ -76,7 +77,6 @@ class Butler():
         return stop
 
     def background_callback(self, rec, audio):
-        print("--voice detected--", flush=True)
         if audio:
             reply = self.think(audio,use_name=True)
             if reply:
@@ -111,7 +111,29 @@ class Butler():
         # if you already got the attention, no need to say the name
         if self.isAttention():
             use_name=False
-            
+
+        # force to use sphynx for searching trigger keyword
+        if use_name and "cmusphinx" != self.tts_engine and self.conservative:
+            try:
+                keywords = [("hey "+self.name, 1.0)]
+                text = self.rec.recognize_sphinx(audio,keyword_entries=keywords)
+                print(text, flush=True)
+                if text:
+                    m = re.search("hey "+self.name,text)
+                    if not m:
+                        print("--not activated--", flush=True)
+                        return
+                    else:
+                        print("--activated--", flush=True)
+            except sr.UnknownValueError as e:
+                print("--sphinx does not understand-- {0}".format(e), flush=True)
+                return
+            except sr.RequestError as e:
+                print("--sphinx error-- {0}".format(e), flush=True)
+                return
+
+
+        print("--thinking--", flush=True)
         if "cmusphinx"==self.stt_engine:
             try:
                 keywords = [("hey "+self.name, 1.0)]
