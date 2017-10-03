@@ -141,7 +141,7 @@ class Butler():
                 task = self.tasks[res[0]]
                 if task.isConversation():
                     task.converse(self)
-                    pass
+                    return
                 else:
                     return task.execute(res[1])
 
