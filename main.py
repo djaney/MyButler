@@ -22,8 +22,9 @@ def main():
     parser.add_option("-s", "--stt", type=str, default="cmusphinx", help='Speech to text engine')
     parser.add_option("-p", "--pushtotalk", default=True, help='Push to talk')
     parser.add_option("-e", "--energy", default=700,type=int, help='Energy required to activate talk')
+    parser.add_option("-a", "--aggressive", default=False, action="store_true", help='if not aggressive, it will use sphinx for detecting activation')
 
-
+    
     args = parser.parse_args()
     options = args[0]
 
@@ -36,6 +37,7 @@ def main():
     r = sr.Recognizer()
 
     butler = Butler()
+    butler.conservative = not options.aggressive
     butler.loadPackage(PackageComputer)
     butler.loadPackage(PackageChrome)
     butler.loadPackage(PackageAsk)

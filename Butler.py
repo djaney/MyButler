@@ -28,6 +28,7 @@ class Butler():
     energy = 300
     __last_attention = 0
     attention_span = 5
+    conservative = True
 
     def __init__(self):
         self.sqsUrl = os.environ["SQS_URL"]
@@ -46,7 +47,6 @@ class Butler():
         self.botoSess = boto3.Session(profile_name='mybutler')
         self.sqs = self.botoSess.client("sqs")
         self.google_credentials = None
-        self.conservative = True
 
         if 0 == self.energy:
             if adjust_noise:
@@ -111,7 +111,6 @@ class Butler():
         # if you already got the attention, no need to say the name
         if self.isAttention():
             use_name=False
-
         # force to use sphynx for searching trigger keyword
         if use_name and "cmusphinx" != self.tts_engine and self.conservative:
             try:
