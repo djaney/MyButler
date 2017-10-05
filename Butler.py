@@ -113,6 +113,7 @@ class Butler():
             use_name=False
         # force to use sphynx for searching trigger keyword
         if use_name and "cmusphinx" != self.stt_engine and self.conservative:
+            print("--conservative mode, using sphinx--", flush=True)
             try:
                 keywords = [("hey "+self.name, 1.0)]
                 text = self.rec.recognize_sphinx(audio,keyword_entries=keywords)
@@ -130,6 +131,8 @@ class Butler():
             except sr.RequestError as e:
                 print("--sphinx error-- {0}".format(e), flush=True)
                 return
+        else:
+            print("--aggressive mode--", flush=True)
 
 
         print("--thinking--", flush=True)
