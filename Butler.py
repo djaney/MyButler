@@ -112,7 +112,7 @@ class Butler():
         if self.isAttention():
             use_name=False
         # force to use sphynx for searching trigger keyword
-        if use_name and "cmusphinx" != self.tts_engine and self.conservative:
+        if use_name and "cmusphinx" != self.stt_engine and self.conservative:
             try:
                 keywords = [("hey "+self.name, 1.0)]
                 text = self.rec.recognize_sphinx(audio,keyword_entries=keywords)
