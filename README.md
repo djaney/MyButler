@@ -3,6 +3,10 @@ play around with python speech recognition and generation. Try to create a sensi
 
 Note: I tried to put this on docker but I'm having issues with the sound. So for now, just look at the Dockerfile and install the requirements yourself.
 
+## Current features
+1. recieve any notification from AWS Lambda --> SQS. I use this to do any notification from IFTTT
+1. weather query
+1. time query
 
 ## Todo
 1. Push to talk
