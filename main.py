@@ -18,8 +18,8 @@ def main():
 
 
     parser = OptionParser(description='Welcome to my butler')
-    parser.add_option("-t", "--tts", type=str, default="espeak", help='Text to speech engine to use')
-    parser.add_option("-s", "--stt", type=str, default="cmusphinx", help='Speech to text engine')
+    parser.add_option("-t", "--tts", type=str, default="espeak", help='Text to speech engine to use. espeak, pico')
+    parser.add_option("-s", "--stt", type=str, default="cmusphinx", help='Speech to text engine. cmusphinx, google')
     parser.add_option("-p", "--pushtotalk", default=True, help='Push to talk')
     parser.add_option("-e", "--energy", default=700,type=int, help='Energy required to activate talk')
     parser.add_option("-a", "--aggressive", default=False, action="store_true", help='if not aggressive, it will use sphinx for detecting activation')
