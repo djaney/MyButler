@@ -1,19 +1,16 @@
 import speech_recognition as sr
 import pyttsx3 as ss
 import pyaudio
-import wave
 
 import os
-import sys
-import select
 import re
 import boto3
 import time
 from tts.TextToSpeech import TextToSpeech
 from ttspico import TtsEngine as Pico
 
-class Butler():
 
+class Butler:
     tasks = []
     keywords = []
     mic = None
@@ -31,12 +28,14 @@ class Butler():
     conservative = True
 
     def __init__(self):
+        self.botoSess = boto3.Session(profile_name='mybutler')
+        self.google_credentials = None
         self.sqsUrl = os.environ["SQS_URL"]
         self.sqsRegion = os.environ["SQS_REGION"]
 
-    def init(self, adjust_noise = True, tts = "espeak", stt = "cmusphinx",
-            push_to_talk = True, energy = 300):
-        #os.system("sphinx_jsgf2fsg -jsgf butler.jsgf > butler.fsg")
+    def init(self, adjust_noise=True, tts="espeak", stt="cmusphinx",
+             push_to_talk=True, energy=300):
+        # os.system("sphinx_jsgf2fsg -jsgf butler.jsgf > butler.fsg")
         self.rec = sr.Recognizer()
         self.mic = sr.Microphone(device_index=None)
         self.tts = TextToSpeech()
@@ -44,23 +43,24 @@ class Butler():
         self.stt_engine = stt
         self.push_to_talk = push_to_talk
         self.energy = energy
-        self.botoSess = boto3.Session(profile_name='mybutler')
         self.sqs = self.botoSess.client("sqs")
-        self.google_credentials = None
 
         if 0 == self.energy:
             if adjust_noise:
                 with self.mic as source:
                     self.rec.adjust_for_ambient_noise(source)
-                    print("Energy: "+ str(self.rec.energy_threshold))
+                    print("Energy: " + str(self.rec.energy_threshold))
         else:
             self.rec.dynamic_energy_threshold = False
             self.rec.energy_threshold = self.energy
-    def isAttention(self):
-        return False if self.getTimeSinceLastAttention() > self.attention_span else True
-    def getTimeSinceLastAttention(self):
+
+    def is_attention(self):
+        return False if self.get_time_since_last_attention() > self.attention_span else True
+
+    def get_time_since_last_attention(self):
         return time.time() - self.__last_attention
-    def setGoogleCredentials(self, cred):
+
+    def set_google_credentials(self, cred):
         self.google_credentials = cred
 
     def ask(self):
@@ -73,31 +73,30 @@ class Butler():
 
     def listen(self):
         stop = self.rec.listen_in_background(self.mic,
-                self.background_callback, phrase_time_limit=5)
+                                             self.background_callback, phrase_time_limit=5)
         return stop
 
     def background_callback(self, rec, audio):
         if audio:
-            reply = self.think(audio,use_name=True)
+            reply = self.think(audio, use_name=True)
             if reply:
                 self.talk(reply)
-            
 
-    def speechToText(self, audio):
+    def speech_to_text(self, audio):
         text = ""
-        if "cmusphinx"==self.stt_engine:
+        if "cmusphinx" == self.stt_engine:
             try:
-                keywords = [("hey "+self.name, 1.0)]
+                keywords = [("hey " + self.name, 1.0)]
                 for t in self.tasks:
-                    keywords+=t.getKeySpotting()
-                text = self.rec.recognize_sphinx(audio,keyword_entries=keywords)
+                    keywords += t.getKeySpotting()
+                text = self.rec.recognize_sphinx(audio, keyword_entries=keywords)
             except sr.UnknownValueError as e:
                 print("can't understand, {0}".format(e))
             except sr.RequestError as e:
                 print("request error, {0}".format(e))
-        elif "google"==self.stt_engine:
+        elif "google" == self.stt_engine:
             try:
-                text = self.rec.recognize_google_cloud(audio,preferred_phrases=["hey "+self.name.lower()])
+                text = self.rec.recognize_google_cloud(audio, preferred_phrases=["hey " + self.name.lower()])
             except sr.UnknownValueError as e:
                 print("--no action--".format(e))
             except sr.RequestError as e:
@@ -109,17 +108,17 @@ class Butler():
     def think(self, audio, silent_failure=False, use_name=False):
         text = ""
         # if you already got the attention, no need to say the name
-        if self.isAttention():
-            use_name=False
+        if self.is_attention():
+            use_name = False
         # force to use sphynx for searching trigger keyword
         if use_name and "cmusphinx" != self.stt_engine and self.conservative:
             print("--conservative mode, using sphinx--", flush=True)
             try:
-                keywords = [("hey "+self.name, 1.0)]
-                text = self.rec.recognize_sphinx(audio,keyword_entries=keywords)
+                keywords = [("hey " + self.name, 1.0)]
+                text = self.rec.recognize_sphinx(audio, keyword_entries=keywords)
                 print(text, flush=True)
                 if text:
-                    m = re.search("hey "+self.name,text)
+                    m = re.search("hey " + self.name, text)
                     if not m:
                         print("--not activated--", flush=True)
                         return
@@ -134,31 +133,31 @@ class Butler():
         else:
             print("--aggressive mode--", flush=True)
 
-
         print("--thinking--", flush=True)
-        if "cmusphinx"==self.stt_engine:
+        if "cmusphinx" == self.stt_engine:
             try:
-                keywords = [("hey "+self.name, 1.0)]
+                keywords = [("hey " + self.name, 1.0)]
                 for t in self.tasks:
-                    keywords+=t.getKeySpotting()
-                text = self.rec.recognize_sphinx(audio,keyword_entries=keywords)
-                return self.processText(text, use_name)
+                    keywords += t.getKeySpotting()
+                text = self.rec.recognize_sphinx(audio, keyword_entries=keywords)
+                return self.process_text(text, use_name)
             except sr.UnknownValueError as e:
                 print("can't understand, {0}".format(e))
             except sr.RequestError as e:
                 print("request error, {0}".format(e))
-        elif "google"==self.stt_engine:
+        elif "google" == self.stt_engine:
             try:
-                text = self.rec.recognize_google_cloud(audio,preferred_phrases=["hey "+self.name.lower()])
-                return self.processText(text, use_name)
+                text = self.rec.recognize_google_cloud(audio, preferred_phrases=["hey " + self.name.lower()])
+                return self.process_text(text, use_name)
             except sr.UnknownValueError as e:
                 print("--no action--".format(e))
             except sr.RequestError as e:
                 print("request error {0}".format(e))
-    def processText(self, text, use_name):
+
+    def process_text(self, text, use_name):
         if text:
-            print("You: "+text,flush=True)
-            res = self.searchKeywords(text.strip(), use_name=use_name)
+            print("You: " + text, flush=True)
+            res = self.search_keywords(text.strip(), use_name=use_name)
             if res is None:
                 pass
             else:
@@ -169,72 +168,71 @@ class Butler():
                 else:
                     return task.execute(res[1])
 
-    def searchKeywords(self, input_string, use_name=False):
+    def search_keywords(self, input_string, use_name=False):
         idx = 0
         for kw in self.keywords:
             if use_name:
-                kw = "hey "+self.name.lower()+" .*" + kw
+                kw = "hey " + self.name.lower() + " .*" + kw
             m = re.search(kw, input_string.lower())
             if m:
-               return idx,m
-            idx+=1
+                return idx, m
+            idx += 1
 
         return None
-    
-    def talk(self,text):
+
+    def talk(self, text):
         if text:
-            print(self.name+": " + text, flush=True)
-            if "espeak"==self.tts_engine:
+            print(self.name + ": " + text, flush=True)
+            if "espeak" == self.tts_engine:
                 speech = ss.init("espeak", True)
                 speech.setProperty("voice", "en-rp+f4")
                 speech.setProperty("rate", 140)
                 speech.say(text)
                 speech.runAndWait()
                 self.__last_attention = time.time()
-            if "pico"==self.tts_engine:
+            if "pico" == self.tts_engine:
                 pico = Pico()
                 pico.rate = 100
-                pico.speak(text, self.__picoCallback)
-            elif "default"==self.tts_engine:
+                pico.speak(text, self.__pico_callback)
+            elif "default" == self.tts_engine:
                 self.tts.get_pronunciation(text)
                 self.__last_attention = time.time()
             else:
                 pass
-        
-    def checkPassive(self):
+
+    def check_passive(self):
         try:
             response = self.sqs.receive_message(QueueUrl=self.sqsUrl,
-                    WaitTimeSeconds=20, MaxNumberOfMessages=10)
+                                                WaitTimeSeconds=20, MaxNumberOfMessages=10)
             toSay = []
             for m in response.get("Messages", []):
                 msg = m.get("Body")
                 if msg:
                     self.sqs.delete_message(QueueUrl=self.sqsUrl,
-                            ReceiptHandle=m.get("ReceiptHandle"))
+                                            ReceiptHandle=m.get("ReceiptHandle"))
                     toSay.append(msg)
             for s in toSay:
                 self.talk(s)
         except:
             pass
-    def loadTask(self, task):
+
+    def load_task(self, task):
         self.tasks.append(task)
         self.keywords.append(task.getKeyword())
 
-    def loadPackage(self, package):
+    def load_package(self, package):
         for t in package.load():
-            self.loadTask(t)
+            self.load_task(t)
 
-    def __picoCallback(self, format, audio, fin):
+    def __pico_callback(self, format, audio, fin):
         p = pyaudio.PyAudio()
         stream = p.open(rate=format[0],
-                format=pyaudio.paInt16,
-                channels=format[2],
-                output=True)
+                        format=pyaudio.paInt16,
+                        channels=format[2],
+                        output=True)
         stream.write(audio)
         stream.stop_stream()
         stream.close()
         p.terminate()
         if fin:
             self.__last_attention = time.time()
-        
-        
